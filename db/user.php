@@ -97,4 +97,66 @@ class User extends Database
             return -1;
         }
     }
+
+    /**
+     * Validates a user token against the database
+     * 
+     * @return The user ID or -1 if the token does not exist or has expired
+     */
+    public function validateToken(string $token): int 
+    {
+        $tokenHash = hash('sha256', $token);
+
+        $sql =<<<'SQL'
+            SELECT nUserID, dResetTokenExpiresAt
+            FROM user
+            WHERE cResetTokenHash = :resetTokenHash;
+        SQL;
+        try {
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute(['resetTokenHash' => $tokenHash]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            // The token does not exist
+            if (gettype($result) !== 'array') {
+                $this->lastErrorMessage = 'Nonexisting token';
+                return -1;
+            }
+            // The token exists, but it has expired
+            if (strtotime($result['dResetTokenExpiresAt']) <= time()) {
+                $this->lastErrorMessage = 'The token has expired';
+                return -1;
+            }
+            // The token exists and is valid
+            return $result['nUserID'];
+        } catch (PDOException $e) {
+            $this->lastErrorMessage = 'Database error: ' . $e->getMessage();
+            return -1;
+        }
+    }
+
+    public function resetPassword(int $userID, string $password): int
+    {
+        $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+
+        $sql =<<<'SQL'
+            UPDATE user
+            SET cPasswordHash = :passwordHash,
+                cResetTokenHash = NULL,
+                dResetTokenExpiresAt = NULL
+            WHERE nUserID = :userID;
+        SQL;
+        try {
+
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([
+                'passwordHash'  => $passwordHash,
+                'userID'        => $userID
+            ]);
+            return ($stmt->rowCount() > 0);
+        } catch (PDOException $e) {
+            $this->lastErrorMessage = 'Database error: ' . $e->getMessage();
+            return -1;
+        }
+    }
 }
