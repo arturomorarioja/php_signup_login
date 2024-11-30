@@ -76,8 +76,23 @@ class User extends Database
         }
     }
 
-    public function resetToken(string $email, string $tokenHash, string $expiry): int
+    /**
+     * It resets a user token
+     * 
+     * @return The hashed token or -1 if there was an error
+     */
+    public function resetToken(string $email): string|int
     {
+        // random_bytes() generates a cryptographically secure sequence 
+        //      of bytes with the length it receives as a parameter
+        // bin2hex() converts binary data into its hexadecimal representation
+        $token = bin2hex(random_bytes(16));
+        // hash() generates a hash value, in this case using the sha256 algorithm
+        $tokenHash = hash('sha256', $token);
+        // As the token could be figured out via a brute force attack,
+        //      it is set to expire in 30 minutes
+        $expiry = date('Y-m-d H:i:s', time() + (60 * 30));
+
         $sql =<<<'SQL'
             UPDATE user
             SET cResetTokenHash = :resetTokenHash,
@@ -91,7 +106,12 @@ class User extends Database
                 'resetTokenExpiresAt'   => $expiry,
                 'email'                 => $email
             ]);
-            return $stmt->rowCount() > 0 ? 1 : -1;
+            if ($stmt->rowCount() > 0) {
+                return $tokenHash;
+            } else {
+                $this->lastErrorMessage = 'The user token hash was not updated';
+                return -1;
+            }
         } catch (PDOException $e) {
             $this->lastErrorMessage = 'Database error: ' . $e->getMessage();
             return -1;
@@ -135,7 +155,7 @@ class User extends Database
         }
     }
 
-    public function resetPassword(int $userID, string $password): int
+    public function resetPassword(int $userID, string $password): int|string
     {
         $passwordHash = password_hash($password, PASSWORD_DEFAULT);
 
