@@ -12,7 +12,7 @@ if ($newPassword === '') {
     exit;
 }
 
-require_once 'db/user.php';
+require_once 'data/user.php';
 $user = new User;
 $userID = $user->validateToken($token);
 if (!$userID) {

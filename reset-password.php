@@ -3,7 +3,7 @@
 $token = $_GET['token'] ?? '';
 
 if ($token !== '') {
-    require_once 'db/user.php';
+    require_once 'data/user.php';
     $user = new User;
     if ($user->validateToken($token)) {
         echo 'Token found!';

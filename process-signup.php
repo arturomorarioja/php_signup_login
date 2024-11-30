@@ -25,7 +25,7 @@ if ($_POST['password'] !== $_POST['repeat-password']) {
     die('Passwords must have the same value');
 }
 
-require __DIR__ . '/db/user.php';
+require __DIR__ . '/data/user.php';
 $user = new User();
 $newUserID = $user->add($_POST['name'], $_POST['email'], $_POST['password']);
 

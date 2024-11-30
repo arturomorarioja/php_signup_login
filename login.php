@@ -8,7 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'
     && $email !== '' 
     && $password !== '') {
 
-    require_once 'db/user.php';
+    require_once 'data/user.php';
     $user = new User;
     $userInfo = $user->validateLogin($email, $password);
 
