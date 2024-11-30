@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Mailer class
+ * 
+ * Manages sending emails to users
+ */
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
@@ -32,6 +38,13 @@ class Mailer
         $this->mailer = $mailer;
     }
 
+    /**
+     * Sends a reset password link to a user
+     * 
+     * @param $email The recipient's email address
+     * @param $token The reset token
+     * @return 1 if successfull, 0 if an error happens
+     */
     public function sendResetPassword(string $email, string $token): int
     {
         $this->mailer->setFrom(Config::MAILER_USERNAME);
@@ -49,7 +62,7 @@ class Mailer
             return 1;
         } catch (Exception $e) {
             $this->lastErrorMessage = "The message could not be send. Mailer error: {$e->errorMessage()}.";
-            return -1;
+            return 0;
         }    
     }
 }

@@ -2,7 +2,7 @@
 
 require_once 'config.php';
 
-class Database
+abstract class Database
 {
     public PDO $conn;
     public string $lastErrorMessage = '';

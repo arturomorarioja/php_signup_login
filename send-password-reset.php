@@ -2,6 +2,11 @@
 
 $email = $_POST['email'] ?? '';
 
+if ($email === '') {
+    echo 'Nonexisting email';
+    exit;
+} 
+
 require_once 'data/user.php';
 $user = new User;
 $tokenHash = $user->resetToken($email);

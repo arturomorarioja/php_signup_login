@@ -4,6 +4,8 @@
 // With submitted information, it is requested as POST.
 $email = $_POST['email'] ?? '';
 $password = $_POST['password'] ?? '';
+$userInfo = null;
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST'
     && $email !== '' 
     && $password !== '') {
@@ -13,8 +15,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'
     $userInfo = $user->validateLogin($email, $password);
 
     if ($userInfo) {
-        $message = 'Successful login!';
-
         session_start();
         // Generates a new session ID to prevent session fixation attacks
         session_regenerate_id();
@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'
         <section>
             <p><?= $message ?? ''; ?></p>
         </section>
-        <form method="POST" action="send-password-reset.php">
+        <form method="POST">
             <div>
                 <label for="txtEmail">Email</label>
                 <input type="email" id="txtEmail" name="email" 

@@ -7,7 +7,10 @@ class User extends Database
     /**
      * Adds a new user
      * 
-     * @return The new user's ID, or -1 if there is an error,
+     * @param $name     The username
+     * @param $email    The user's email address
+     * @param $password The user's password
+     * @return The new user's ID, or 0 if there is an error,
      *         whose message will be logged into $this->lastErrorMessage
      */
     public function add(string $name, string $email, string $password): int
@@ -34,14 +37,16 @@ class User extends Database
             } else {
                 $this->lastErrorMessage = 'Database error: ' . $e->getMessage();
             }
-            return -1;
+            return 0;
         }
     }
 
     /**
      * Validates a user login
      * 
-     * @return The user ID, or -1 if the validation is unsuccessful
+     * @param $email    The user's email address
+     * @param $password The user's password
+     * @return The user ID, or 0 if the validation is unsuccessful
      */
     public function validateLogin(string $email, string $password): array|int
     {
@@ -58,12 +63,12 @@ class User extends Database
             // Email not found
             if (gettype($result) !== 'array') {
                 $this->lastErrorMessage = 'Incorrect credentials';
-                return -1;
+                return 0;
             }
             // Incorrect password
             if (!password_verify($password, $result['cPasswordHash'])) {
                 $this->lastErrorMessage = 'Incorrect credentials';
-                return -1;
+                return 0;
             }
             return [
                 'user_id' => $result['nUserID'],
@@ -72,14 +77,15 @@ class User extends Database
 
         } catch (PDOException $e) {
             $this->lastErrorMessage = 'Database error: ' . $e->getMessage();
-            return -1;
+            return 0;
         }
     }
 
     /**
      * It resets a user token
      * 
-     * @return The hashed token or -1 if there was an error
+     * @param $email The email of the user whose token is reset
+     * @return The hashed token or 0 if there was an error
      */
     public function resetToken(string $email): string|int
     {
@@ -110,18 +116,19 @@ class User extends Database
                 return $tokenHash;
             } else {
                 $this->lastErrorMessage = 'The user token hash was not updated';
-                return -1;
+                return 0;
             }
         } catch (PDOException $e) {
             $this->lastErrorMessage = 'Database error: ' . $e->getMessage();
-            return -1;
+            return 0;
         }
     }
 
     /**
      * Validates a user token against the database
      * 
-     * @return The user ID or -1 if the token does not exist or has expired
+     * @param $token The token to validate
+     * @return The user ID or 0 if the token does not exist or has expired
      */
     public function validateToken(string $token): int 
     {
@@ -140,22 +147,29 @@ class User extends Database
             // The token does not exist
             if (gettype($result) !== 'array') {
                 $this->lastErrorMessage = 'Nonexisting token';
-                return -1;
+                return 0;
             }
             // The token exists, but it has expired
             if (strtotime($result['dResetTokenExpiresAt']) <= time()) {
                 $this->lastErrorMessage = 'The token has expired';
-                return -1;
+                return 0;
             }
             // The token exists and is valid
             return $result['nUserID'];
         } catch (PDOException $e) {
             $this->lastErrorMessage = 'Database error: ' . $e->getMessage();
-            return -1;
+            return 0;
         }
     }
 
-    public function resetPassword(int $userID, string $password): int|string
+    /**
+     * It resets a user password
+     * 
+     * @param $userID   The ID of the user whose password is reset
+     * @param $password The new password
+     * @return 1 if the password reset is successful, 0 otherwose
+     */
+    public function resetPassword(int $userID, string $password): int
     {
         $passwordHash = password_hash($password, PASSWORD_DEFAULT);
 
@@ -173,10 +187,15 @@ class User extends Database
                 'passwordHash'  => $passwordHash,
                 'userID'        => $userID
             ]);
-            return ($stmt->rowCount() > 0);
+            if ($stmt->rowCount() > 0) {
+                return 1;
+            } else {
+                $this->lastErrorMessage = 'The password update was unsuccessful';
+                return 0;
+            }
         } catch (PDOException $e) {
             $this->lastErrorMessage = 'Database error: ' . $e->getMessage();
-            return -1;
+            return 0;
         }
     }
 }

@@ -29,7 +29,7 @@ require __DIR__ . '/data/user.php';
 $user = new User();
 $newUserID = $user->add($_POST['name'], $_POST['email'], $_POST['password']);
 
-if ($newUserID === -1) {
+if (!$newUserID) {
     echo $user->lastErrorMessage;
 } else {
     header('Location: signup-success.html');
