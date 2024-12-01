@@ -2,6 +2,9 @@
 
 $success = false;
 $errorMessages = [];
+
+// If the request method is GET, the page has been called from a link.
+// If it is POST, if has been called from its own form submission.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($_POST['name'])) { $errorMessages[] = 'Name is required'; }

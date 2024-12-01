@@ -1,11 +1,11 @@
 <?php
 
-// Without submitted information, this page is requested as GET.
-// With submitted information, it is requested as POST.
 $email = $_POST['email'] ?? '';
 $password = $_POST['password'] ?? '';
 $userInfo = null;
 
+// If the request method is GET, the page has been called from a link.
+// If it is POST, if has been called from its own form submission.
 if ($_SERVER['REQUEST_METHOD'] === 'POST'
     && $email !== '' 
     && $password !== '') {
@@ -18,12 +18,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'
         session_start();
         // Generates a new session ID to prevent session fixation attacks
         session_regenerate_id();
+
         $_SESSION['user_id'] = $userInfo['user_id'];
         $_SESSION['username'] = $userInfo['name'];
         header('Location: index.php');
         exit;
     } else {
-        $message = $user->lastErrorMessage;
+        $errorMessage = $user->lastErrorMessage;
     }
 }
 
@@ -35,14 +36,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
     <header>
         <h1>Login</h1>
     </header>
     <main>
-        <section>
-            <p><?= $message ?? ''; ?></p>
+        <section class="error">
+            <p><?= $errorMessage ?? ''; ?></p>
         </section>
         <form method="POST">
             <div>
