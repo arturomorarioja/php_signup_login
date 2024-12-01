@@ -21,7 +21,7 @@ session_start();
             <?php else: ?>
                 <p>
                     <a href="login.php" title="Log in">Log in</a> 
-                    or <a href="signup.html" title="Sign up">sign up</a>
+                    or <a href="signup.php" title="Sign up">sign up</a>
                 </p>
             <?php endif; ?>
         </section>

@@ -1,0 +1,7 @@
+:root {
+    --colourError: red;
+}
+
+.error {
+    color: var(--colourError);
+}
