@@ -22,7 +22,7 @@ class Mailer
     public function __construct()
     {       
         $mailer = new PHPMailer(true);              // true activates exceptions
-        $mailer->SMTPDebug = SMTP::DEBUG_SERVER;    // Remove in production
+        // $mailer->SMTPDebug = SMTP::DEBUG_SERVER;    // Remove in production
         
         $mailer->isSMTP();    // Use the configuration below instead of the local mail server
         $mailer->SMTPAuth = true;

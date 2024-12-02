@@ -89,6 +89,24 @@ class User extends Database
      */
     public function resetToken(string $email): string|int
     {
+        // User existence is checked
+        $sql =<<<'SQL'
+            SELECT COUNT(*) AS Total
+            FROM user
+            WHERE cEmail = :email;
+        SQL;
+        try {
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute(['email' => $email]);
+            if ($stmt->fetch()['Total'] === 0) {
+                $this->lastErrorMessage = 'There is no user with this email address';
+                return 0;
+            }
+        } catch (PDOException $e) {
+            $this->lastErrorMessage = 'Database error: ' . $e->getMessage();
+            return 0;
+        }
+
         // random_bytes() generates a cryptographically secure sequence 
         //      of bytes with the length it receives as a parameter
         // bin2hex() converts binary data into its hexadecimal representation
