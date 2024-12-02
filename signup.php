@@ -14,36 +14,46 @@ $errorMessages = [];
 // If the request method is GET, the page has been called from a link.
 // If it is POST, if has been called from its own form submission.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $name = trim($_POST['name'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $password = trim($_POST['password'] ?? '');
+    $repeatPassword = trim($_POST['repeat-password'] ?? '');
 
-    if (empty($_POST['name'])) { $errorMessages[] = 'Name is required'; }
-    if (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
+    if (empty($name)) { $errorMessages[] = 'Name is required'; }
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errorMessages[] = 'Valid email is required';
     }
-    if (strlen($_POST['password']) < 8) {
+    if (strlen($password) < 8) {
         $errorMessages[] = 'Password must be at least 8 characters';
     }
     
-    if (!preg_match('/[a-z]/i', $_POST['password'])) {
+    if (!preg_match('/[a-z]/i', $password)) {
         $errorMessages[] = 'Password must contain at least one letter';
     }
     
-    if (!preg_match('/[0-9]/', $_POST['password'])) {
+    if (!preg_match('/[0-9]/', $password)) {
         $errorMessages[] = 'Password must contain at least one number';
     }
     
-    if ($_POST['password'] !== $_POST['repeat-password']) {
+    if ($password !== $repeatPassword) {
         $errorMessages[] = 'Passwords must have the same value';
     }
     
     if ($errorMessages === []) {
-        require 'data/user.php';
-        $user = new User();
-        $newUserID = $user->add($_POST['name'], $_POST['email'], $_POST['password']);
+        require_once 'data/user.php';
+        $user = new User;
+        $accountActivationHash = $user->add($name, $email, $password);
         
-        if (!$newUserID) {
+        if (!$accountActivationHash) {
             $errorMessages[] = $user->lastErrorMessage;
         } else {
-            $success = true;
+            require_once 'data/mailer.php';
+            $mailer = new Mailer;
+            if (!$mailer->sendAccountActivation($email, $accountActivationHash)) {
+                $errorMessages[] = $mailer->lastErrorMessage;
+            } else {
+                $success = true;
+            }
         }
     }
 }
@@ -66,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php if ($success): ?>
             <section>
                 <h2>Signup successful</h2>
-                <p>You can now <a href="login.php" title="Log in">log in</a></p>
+                <p>Please check your email to activate your account.</p>
             </section>
         <?php else: ?>
             <?php if ($errorMessages): ?>

@@ -10,27 +10,34 @@ class User extends Database
      * @param $name     The username
      * @param $email    The user's email address
      * @param $password The user's password
-     * @return The new user's ID, or 0 if there is an error,
+     * @return The new user's activation hash, or 0 if there is an error,
      *         whose message will be logged into $this->lastErrorMessage
      */
-    public function add(string $name, string $email, string $password): int
+    public function add(string $name, string $email, string $password): string|int
     {
         $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+        $accountActivationHash = $this->generateToken();
         
         $sql =<<<'SQL'
             INSERT INTO user
-                (cName, cEmail, cPasswordHash)
+                (cName, cEmail, cPasswordHash, cAccountActivationHash)
             VALUES
-                (:name, :email, :passwordHash);
+                (:name, :email, :passwordHash, :accountActivationHash);
         SQL;
         try {
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([
-                'name'          => $name,
-                'email'         => $email,
-                'passwordHash'  => $passwordHash
+                'name'                  => $name,
+                'email'                 => $email,
+                'passwordHash'          => $passwordHash,
+                'accountActivationHash' => $accountActivationHash
             ]);
-            return $this->conn->lastInsertId();
+            if ($stmt->rowcount() === 0) {
+                $this->lastErrorMessage = 'The user could not be added to the database';
+                return 0;
+            } else {
+                return $accountActivationHash;
+            }
         } catch(PDOException $e) {
             if ($e->getCode() === '23000') {
                 $this->lastErrorMessage = "A user with the email address $email already exists.";
@@ -51,7 +58,7 @@ class User extends Database
     public function validateLogin(string $email, string $password): array|int
     {
         $sql =<<<'SQL'
-            SELECT nUserID, cName, cPasswordHash
+            SELECT nUserID, cName, cPasswordHash, cAccountActivationHash
             FROM user
             WHERE cEmail = :email;
         SQL;
@@ -68,6 +75,11 @@ class User extends Database
             // Incorrect password
             if (!password_verify($password, $result['cPasswordHash'])) {
                 $this->lastErrorMessage = 'Incorrect credentials';
+                return 0;
+            }
+            // Account not activated
+            if ($result['cAccountActivationHash'] !== null) {
+                $this->lastErrorMessage = 'Account not yet activated. Please check your email';
                 return 0;
             }
             return [
@@ -108,12 +120,8 @@ class User extends Database
             return 0;
         }
 
-        // random_bytes() generates a cryptographically secure sequence 
-        //      of bytes with the length it receives as a parameter
-        // bin2hex() converts binary data into its hexadecimal representation
-        $token = bin2hex(random_bytes(16));
-        // hash() generates a hash value, in this case using the sha256 algorithm
-        $tokenHash = hash('sha256', $token);
+        // A unique user token is generated to guarantee the user's legitimacy
+        $tokenHash = $this->generateToken();
         // As the token could be figured out via a brute force attack,
         //      it is set to expire in 30 minutes
         $expiry = date('Y-m-d H:i:s', time() + (60 * 30));
@@ -144,12 +152,53 @@ class User extends Database
     }
 
     /**
-     * Validates a user token against the database
+     * Validates an account activation token against the database
      * 
      * @param $tokenHash The token to validate
      * @return The user ID or 0 if the token does not exist or has expired
      */
-    public function validateToken(string $tokenHash): int 
+    public function validateAccountActivationToken(string $tokenHash): int
+    {
+        $sql =<<<'SQL'
+            SELECT nUserID
+            FROM user
+            WHERE cAccountActivationHash = :accountActivationHash;
+        SQL;
+        try {
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute(['accountActivationHash' => $tokenHash]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            // The token does not exist
+            if (gettype($result) !== 'array') {
+                $this->lastErrorMessage = 'Nonexisting token';
+                return 0;
+            }
+
+            // Account activation is successful.
+            // The activation token can be deleted.
+            $sql =<<<'SQL'
+                UPDATE user
+                SET cAccountActivationHash = NULL
+                WHERE nUserID = :userID;
+            SQL;
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute(['userID' => $result['nUserID']]);
+
+            return $result['nUserID'];
+        } catch (PDOException $e) {
+            $this->lastErrorMessage = 'Database error: ' . $e->getMessage();
+            return 0;
+        }
+    }
+
+    /**
+     * Validates a password reset token against the database
+     * 
+     * @param $tokenHash The token to validate
+     * @return The user ID or 0 if the token does not exist or has expired
+     */
+    public function validatePasswordResetToken(string $tokenHash): int 
     {
         $sql =<<<'SQL'
             SELECT nUserID, dResetTokenExpiresAt
@@ -214,5 +263,21 @@ class User extends Database
             $this->lastErrorMessage = 'Database error: ' . $e->getMessage();
             return 0;
         }
+    }
+
+    /**
+     * Generates a hashed token for use when either 
+     * activating an account or resetting a password
+     * 
+     * @return The hashed token
+     */
+    private function generateToken(): string
+    {
+        // random_bytes() generates a cryptographically secure sequence 
+        //      of bytes with the length it receives as a parameter
+        // bin2hex() converts binary data into its hexadecimal representation
+        $token = bin2hex(random_bytes(16));
+        // hash() generates a hash value, in this case using the sha256 algorithm
+        return hash('sha256', $token);
     }
 }

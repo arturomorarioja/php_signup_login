@@ -7,6 +7,7 @@
  */
 
 use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
 require dirname(__DIR__) . '../vendor/autoload.php';
@@ -35,6 +36,36 @@ class Mailer
         $mailer->isHtml(true);    // Allows for HTML content in emails
         
         $this->mailer = $mailer;
+    }
+
+    /**
+     * Sends an account activation link to a user
+     * 
+     * @param $email The recipient's email address
+     * @param $token The reset token
+     * @return 1 if successfull, 0 if an error happens
+     */
+    public function sendAccountActivation(string $email, string $token): int
+    {
+        $accountActivationTarget = Config::APP_BASE_URL . Config::ACCOUNT_ACTIVATION_TARGET;
+
+        $this->mailer->setFrom(Config::MAILER_USERNAME);
+        $this->mailer->addAddress($email);
+        $this->mailer->Subject = 'Account activation';
+        $this->mailer->Body =<<<MAIL
+        <h1>Account Activation</h1>
+        <p>
+            Click <a href="{$accountActivationTarget}?token=$token" title="Activate account">here</a> to activate your account.
+        </p>    
+        MAIL;
+    
+        try {
+            $this->mailer->send();
+            return 1;
+        } catch (Exception $e) {
+            $this->lastErrorMessage = "The message could not be send. Mailer error: {$e->errorMessage()}.";
+            return 0;
+        }    
     }
 
     /**

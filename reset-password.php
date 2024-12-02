@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     } else {
         require_once 'data/user.php';
         $user = new User;
-        if (!$user->validateToken($token)) {
+        if (!$user->validatePasswordResetToken($token)) {
             $errorMessages[] = $user->lastErrorMessage;
             // If the token is incorrect, the form should not even be shown.
             // It could be a security attack.
@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     // the hidden input in the form
     require_once 'data/user.php';
     $user = new User;
-    $userID = $user->validateToken($token);
+    $userID = $user->validatePasswordResetToken($token);
     if (!$userID) { $errorMessages[] = $user->lastErrorMessage; }
     
     $newPassword = $_POST['new-password'] ?? '';

@@ -18,5 +18,6 @@ class Config
     const MAILER_PASSWORD = 'gFce5S0i6gjeyONz';
 
     // Mailer class configuration
+    const ACCOUNT_ACTIVATION_TARGET = '/activate-account.php';
     const PWD_RESET_TARGET = '/reset-password.php';
 }
