@@ -17,7 +17,7 @@ require_once 'config.php';
 class Mailer
 {
     public PHPMailer $mailer;
-    public string $lastErrorMessage = '';
+    public string $lastErrorMessage = '';    
 
     public function __construct()
     {       
@@ -27,11 +27,14 @@ class Mailer
         $mailer->isSMTP();    // Use the configuration below instead of the local mail server
         $mailer->SMTPAuth = true;
         
-        $mailer->Host = Config::MAILER_HOST;
+        // Upon instancing Config, .env is read into $_ENV
+        $config = new Config;
+
+        $mailer->Host = $_ENV['MAILER_HOST'];
         $mailer->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mailer->Port = Config::MAILER_PORT;
-        $mailer->Username = Config::MAILER_USERNAME;
-        $mailer->Password = config::MAILER_PASSWORD;
+        $mailer->Port = $_ENV['MAILER_PORT'];
+        $mailer->Username = $_ENV['MAILER_USERNAME'];
+        $mailer->Password = $_ENV['MAILER_PASSWORD'];
         
         $mailer->isHtml(true);    // Allows for HTML content in emails
         
@@ -47,9 +50,9 @@ class Mailer
      */
     public function sendAccountActivation(string $email, string $token): int
     {
-        $accountActivationTarget = Config::APP_BASE_URL . Config::ACCOUNT_ACTIVATION_TARGET;
+        $accountActivationTarget = $_ENV['APP_BASE_URL'] . Config::ACCOUNT_ACTIVATION_TARGET;
 
-        $this->mailer->setFrom(Config::MAILER_USERNAME);
+        $this->mailer->setFrom($_ENV['MAILER_USERNAME']);
         $this->mailer->addAddress($email);
         $this->mailer->Subject = 'Account activation';
         $this->mailer->Body =<<<MAIL
@@ -63,7 +66,7 @@ class Mailer
             $this->mailer->send();
             return 1;
         } catch (Exception $e) {
-            $this->lastErrorMessage = "The message could not be send. Mailer error: {$e->errorMessage()}.";
+            $this->lastErrorMessage = "The message could not be sent. Mailer error: {$e->errorMessage()}.";
             return 0;
         }    
     }
@@ -77,9 +80,9 @@ class Mailer
      */
     public function sendResetPassword(string $email, string $token): int
     {
-        $passwordResetTarget = Config::APP_BASE_URL . Config::PWD_RESET_TARGET;
+        $passwordResetTarget = $_ENV['APP_BASE_URL'] . Config::PWD_RESET_TARGET;
 
-        $this->mailer->setFrom(Config::MAILER_USERNAME);
+        $this->mailer->setFrom($_ENV['MAILER_USERNAME']);
         $this->mailer->addAddress($email);
         $this->mailer->Subject = 'Password Reset';
         $this->mailer->Body =<<<MAIL
@@ -93,7 +96,7 @@ class Mailer
             $this->mailer->send();
             return 1;
         } catch (Exception $e) {
-            $this->lastErrorMessage = "The message could not be send. Mailer error: {$e->errorMessage()}.";
+            $this->lastErrorMessage = "The message could not be sent. Mailer error: {$e->errorMessage()}.";
             return 0;
         }    
     }

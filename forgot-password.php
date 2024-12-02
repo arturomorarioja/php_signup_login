@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($mailer->sendResetPassword($email, $tokenHash)) {
                     $success = true;
                 } else {
-                    $errorMessage = "The message could not be send. Mailer error: {$mailer->lastErrorMessage}.";
+                    $errorMessage = "The message could not be sent. Mailer error: {$mailer->lastErrorMessage}.";
                 }
             } else {
                 $errorMessage = $user->lastErrorMessage;
