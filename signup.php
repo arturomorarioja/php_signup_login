@@ -1,6 +1,6 @@
 <?php
 
-// Login is not allowed if a user is already logged in.
+// Signing up is not allowed if a user is already logged in.
 // This measure prevents security attacks (e.g., accessing this URL directly)
 session_start();
 if (isset($_SESSION['user_id'])) {

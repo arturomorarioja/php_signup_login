@@ -146,13 +146,11 @@ class User extends Database
     /**
      * Validates a user token against the database
      * 
-     * @param $token The token to validate
+     * @param $tokenHash The token to validate
      * @return The user ID or 0 if the token does not exist or has expired
      */
-    public function validateToken(string $token): int 
+    public function validateToken(string $tokenHash): int 
     {
-        $tokenHash = hash('sha256', $token);
-
         $sql =<<<'SQL'
             SELECT nUserID, dResetTokenExpiresAt
             FROM user
