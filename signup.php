@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     if ($errorMessages === []) {
-        require __DIR__ . '/data/user.php';
+        require 'data/user.php';
         $user = new User();
         $newUserID = $user->add($_POST['name'], $_POST['email'], $_POST['password']);
         

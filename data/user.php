@@ -82,7 +82,8 @@ class User extends Database
     }
 
     /**
-     * It resets a user token
+     * It resets a user token to give them the ability 
+     * to reset their password within the next half hour
      * 
      * @param $email The email of the user whose token is reset
      * @return The hashed token or 0 if there was an error

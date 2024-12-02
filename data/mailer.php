@@ -7,7 +7,6 @@
  */
 
 use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
 require dirname(__DIR__) . '../vendor/autoload.php';
@@ -47,13 +46,15 @@ class Mailer
      */
     public function sendResetPassword(string $email, string $token): int
     {
+        $passwordResetTarget = Config::APP_BASE_URL . Config::PWD_RESET_TARGET;
+
         $this->mailer->setFrom(Config::MAILER_USERNAME);
         $this->mailer->addAddress($email);
         $this->mailer->Subject = 'Password Reset';
         $this->mailer->Body =<<<MAIL
         <h1>Password Reset</h1>
         <p>
-            Click <a href="http://localhost/php_signup_login/reset-password.php?token=$token" title="Reset password">here</a> to reset your password.
+            Click <a href="{$passwordResetTarget}?token=$token" title="Reset password">here</a> to reset your password.
         </p>    
         MAIL;
     
