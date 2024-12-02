@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {           
             require_once 'data/user.php';
             $user = new User;
-            $tokenHash = $user->resetToken($email);
+            $tokenHash = $user->resetPasswordResetToken($email);
             if ($tokenHash) {
                 require_once 'data/mailer.php';
                 $mailer = new Mailer;

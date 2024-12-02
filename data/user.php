@@ -100,7 +100,7 @@ class User extends Database
      * @param $email The email of the user whose token is reset
      * @return The hashed token or 0 if there was an error
      */
-    public function resetToken(string $email): string|int
+    public function resetPasswordResetToken(string $email): string|int
     {
         // User existence is checked
         $sql =<<<'SQL'
