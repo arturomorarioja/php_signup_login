@@ -36,6 +36,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $token = $_POST['token'] ?? '';
     if ($token === '') { $errorMessages[] = 'Token not received'; }
         
+    // Although the token was validated when this page was loaded,
+    // it is validated again, as a malicious user could tamper with 
+    // the hidden input in the form
     require_once 'data/user.php';
     $user = new User;
     $userID = $user->validateToken($token);
