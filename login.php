@@ -1,5 +1,13 @@
 <?php
 
+// Login is not allowed if a user is already logged in.
+// This measure prevents security attacks (e.g., accessing this URL directly)
+session_start();
+if (isset($_SESSION['user_id'])) {
+    header('Location: index.php');
+    exit;
+}
+
 $email = $_POST['email'] ?? '';
 $password = $_POST['password'] ?? '';
 $userInfo = null;
@@ -15,7 +23,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'
     $userInfo = $user->validateLogin($email, $password);
 
     if ($userInfo) {
-        session_start();
         // Generates a new session ID to prevent session fixation attacks
         session_regenerate_id();
 

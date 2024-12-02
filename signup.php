@@ -1,5 +1,13 @@
 <?php
 
+// Login is not allowed if a user is already logged in.
+// This measure prevents security attacks (e.g., accessing this URL directly)
+session_start();
+if (isset($_SESSION['user_id'])) {
+    header('Location: index.php');
+    exit;
+}
+
 $success = false;
 $errorMessages = [];
 
