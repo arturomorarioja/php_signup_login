@@ -9,7 +9,7 @@ if (isset($_SESSION['user_id'])) {
 }
 
 $errorMessage = '';
-$token = $_GET['token'] ?? '';
+$token = trim($_GET['token'] ?? '');
 
 if ($token === '') {
     $errorMessage = 'User token not received';
@@ -20,21 +20,10 @@ if ($token === '') {
         $errorMessage = $user->lastErrorMessage;
     }
 }
+$headerText = 'Account Activation';
+include 'views/header.php';
 
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Activation</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
-    <link rel="stylesheet" href="css/styles.css">
-</head>
-<body>
-    <header>
-        <h1>Account Activation</h1>
-    </header>
     <main>
         <?php if ($errorMessage !== ''): ?>
             <section class="error">
@@ -47,5 +36,6 @@ if ($token === '') {
             </section>
         <?php endif; ?>
     </main>
-</body>
-</html>
+<?php
+include 'views/footer.php';
+?>

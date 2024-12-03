@@ -8,8 +8,8 @@ if (isset($_SESSION['user_id'])) {
     exit;
 }
 
-$email = $_POST['email'] ?? '';
-$password = $_POST['password'] ?? '';
+$email = trim($_POST['email'] ?? '');
+$password = trim($_POST['password'] ?? '');
 $userInfo = null;
 
 // If the request method is GET, the page has been called from a link.
@@ -34,26 +34,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'
         $errorMessage = $user->lastErrorMessage;
     }
 }
+$headerText = 'Login';
+include 'views/header.php';
 
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
-    <link rel="stylesheet" href="css/styles.css">
-</head>
-<body>
-    <header>
-        <h1>Login</h1>
-    </header>
     <main>
         <section class="error">
             <p><?= $errorMessage ?? ''; ?></p>
         </section>
-        <form method="POST">
+        <form method="POST" novalidate>
             <div>
                 <label for="txtEmail">Email</label>
                 <input type="email" id="txtEmail" name="email" 
@@ -71,5 +60,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'
             <p><a href="forgot-password.php" title="Forgot password?">Forgot password?</a></p>
         </section>
     </main>
-</body>
-</html>
+<?php
+include 'views/footer.php';
+?>    

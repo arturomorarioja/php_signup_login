@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     }
 // The form has been sent
 } else {
-    $token = $_POST['token'] ?? '';
+    $token = trim($_POST['token'] ?? '');
     if ($token === '') { $errorMessages[] = 'Token not received'; }
         
     // Although the token was validated when this page was loaded,
@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $userID = $user->validatePasswordResetToken($token);
     if (!$userID) { $errorMessages[] = $user->lastErrorMessage; }
     
-    $newPassword = $_POST['new-password'] ?? '';
+    $newPassword = trim($_POST['new-password'] ?? '');
     if (strlen($newPassword) < 8) {
         $errorMessages[] = 'Password must be at least 8 characters';
     }
@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $errorMessages[] = 'Password must contain at least one number';
     }
     
-    $repeatNewPassword = $_POST['repeat-new-password'] ?? '';
+    $repeatNewPassword = trim($_POST['repeat-new-password'] ?? '');
     if ($newPassword !== $repeatNewPassword) {
         $errorMessages[] = 'Passwords must have the same value';
     }
@@ -70,21 +70,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         }    
     }
 }
-    
+$headerText = 'Reset Password';
+include 'views/header.php';
+
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reset Password</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
-    <link rel="stylesheet" href="css/styles.css">
-</head>
-<body>
-    <header>
-        <h1>Reset Password</h1>
-    </header>    
     <main>
         <?php if ($errorMessages !== []): ?>
             <section class="error">
@@ -100,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             </section>
         <?php else: ?>
             <?php if ($showForm): ?>
-                <form method="POST" action="reset-password.php">
+                <form method="POST" action="reset-password.php" novalidate>
                     <input type="hidden" name="token" value="<?=htmlspecialchars($token) ?>">
 
                     <div>
@@ -118,5 +107,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             <?php endif; ?>
         <?php endif; ?>
     </main>
-</body>
-</html>
+<?php
+include 'views/footer.php';
+?>

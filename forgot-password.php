@@ -6,7 +6,7 @@ $errorMessage = '';
 // If the request method is GET, the page has been called from a link.
 // If it is POST, if has been called from its own form submission.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {    
-    $email = $_POST['email'] ?? '';
+    $email = trim($_POST['email'] ?? '');
     
     if ($email === '') {
         $errorMessage = 'No email address has been provided';
@@ -31,21 +31,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+$headerText = 'Forgot Password';
+include 'views/header.php';
     
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forgot Password</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
-    <link rel="stylesheet" href="css/styles.css">
-</head>
-<body>
-    <header>
-        <h1>Forgot Password</h1>
-    </header>
     <main>
         <?php if ($success): ?>
             <section>
@@ -69,5 +58,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </form>
         <?php endif; ?>
     </main>
-</body>
-</html>
+<?php
+include 'views/footer.php';
+?>
