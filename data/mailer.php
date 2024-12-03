@@ -22,7 +22,7 @@ class Mailer
     public function __construct()
     {       
         $mailer = new PHPMailer(true);              // true activates exceptions
-        // $mailer->SMTPDebug = SMTP::DEBUG_SERVER;    // Remove in production
+        // $mailer->SMTPDebug = SMTP::DEBUG_SERVER;    // Comment in production
         
         $mailer->isSMTP();    // Use the configuration below instead of the local mail server
         $mailer->SMTPAuth = true;
@@ -46,29 +46,16 @@ class Mailer
      * 
      * @param $email The recipient's email address
      * @param $token The reset token
-     * @return 1 if successfull, 0 if an error happens
+     * @return 1 if successfull, 0 if an error happens,
+     *         whose message will be logged into $this->lastErrorMessage
      */
     public function sendAccountActivation(string $email, string $token): int
     {
-        $accountActivationTarget = $_ENV['APP_BASE_URL'] . Config::ACCOUNT_ACTIVATION_TARGET;
-
-        $this->mailer->setFrom($_ENV['MAILER_USERNAME']);
-        $this->mailer->addAddress($email);
-        $this->mailer->Subject = 'Account activation';
-        $this->mailer->Body =<<<MAIL
-        <h1>Account Activation</h1>
-        <p>
-            Click <a href="{$accountActivationTarget}?token=$token" title="Activate account">here</a> to activate your account.
-        </p>    
-        MAIL;
-    
-        try {
-            $this->mailer->send();
-            return 1;
-        } catch (Exception $e) {
-            $this->lastErrorMessage = "The message could not be sent. Mailer error: {$e->errorMessage()}.";
-            return 0;
-        }    
+        return $this->sendEmail(
+            $email, $token, 
+            'Account Activation', Config::ACCOUNT_ACTIVATION_TARGET, 
+            'Activate account', 'activate your account'
+        );
     }
 
     /**
@@ -80,15 +67,37 @@ class Mailer
      */
     public function sendResetPassword(string $email, string $token): int
     {
-        $passwordResetTarget = $_ENV['APP_BASE_URL'] . Config::PWD_RESET_TARGET;
+        return $this->sendEmail(
+            $email, $token, 
+            'Password Reset', Config::PWD_RESET_TARGET, 
+            'Reset password', 'reset your password'
+        );
+    }
+
+    /**
+     * Sends an email including a link with a token to a user
+     * 
+     * @param $email            The recipient's email address
+     * @param $token            The reset token
+     * @param $subject          The email's subject
+     * @param $link             The local part of the link's URL
+     * @param $title            The title of the link
+     * @param $actionMessage    The explanatory part of the text to be displayed
+     * @return 1 if successfull, 0 if an error happens,
+     *         whose message will be logged into $this->lastErrorMessage
+     */
+    private function sendEmail(string $email, string $token, string $subject, 
+        string $link, string $title, string $actionMessage): int
+    {
+        $target = $_ENV['APP_BASE_URL'] . $link;
 
         $this->mailer->setFrom($_ENV['MAILER_USERNAME']);
         $this->mailer->addAddress($email);
-        $this->mailer->Subject = 'Password Reset';
+        $this->mailer->Subject = $subject;
         $this->mailer->Body =<<<MAIL
-        <h1>Password Reset</h1>
+        <h1>$subject</h1>
         <p>
-            Click <a href="{$passwordResetTarget}?token=$token" title="Reset password">here</a> to reset your password.
+            Click <a href="{$target}?token=$token" title="$title">here</a> to $actionMessage.
         </p>    
         MAIL;
     

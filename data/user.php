@@ -53,7 +53,8 @@ class User extends Database
      * 
      * @param $email    The user's email address
      * @param $password The user's password
-     * @return The user ID, or 0 if the validation is unsuccessful
+     * @return The user ID, or 0 if there is an error,
+     *         whose message will be logged into $this->lastErrorMessage
      */
     public function validateLogin(string $email, string $password): array|int
     {
@@ -98,7 +99,8 @@ class User extends Database
      * to reset their password within the next half hour
      * 
      * @param $email The email of the user whose token is reset
-     * @return The hashed token or 0 if there was an error
+     * @return The hashed token or 0 if there was an error,
+     *         whose message will be logged into $this->lastErrorMessage
      */
     public function resetPasswordResetToken(string $email): string|int
     {
@@ -155,7 +157,8 @@ class User extends Database
      * Validates an account activation token against the database
      * 
      * @param $tokenHash The token to validate
-     * @return The user ID or 0 if the token does not exist or has expired
+     * @return The user ID or 0 if the token does not exist, has expired or there is an error,
+     *         whose message will be logged into $this->lastErrorMessage
      */
     public function validateAccountActivationToken(string $tokenHash): int
     {
@@ -196,7 +199,8 @@ class User extends Database
      * Validates a password reset token against the database
      * 
      * @param $tokenHash The token to validate
-     * @return The user ID or 0 if the token does not exist or has expired
+     * @return The user ID or 0 if the token does not exist, has expired or there is an error,
+     *         whose message will be logged into $this->lastErrorMessage
      */
     public function validatePasswordResetToken(string $tokenHash): int 
     {
@@ -233,7 +237,8 @@ class User extends Database
      * 
      * @param $userID   The ID of the user whose password is reset
      * @param $password The new password
-     * @return 1 if the password reset is successful, 0 otherwose
+     * @return 1 if the password reset is successful, 0 if there is an error,
+     *         whose message will be logged into $this->lastErrorMessage
      */
     public function resetPassword(int $userID, string $password): int
     {
