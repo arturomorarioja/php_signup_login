@@ -28,7 +28,7 @@ class Mailer
         $mailer->SMTPAuth = true;
         
         // Upon instancing Config, .env is read into $_ENV
-        $config = new Config;
+        $config = new Config();
 
         $mailer->Host = $_ENV['MAILER_HOST'];
         $mailer->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;

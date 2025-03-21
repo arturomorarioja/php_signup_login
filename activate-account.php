@@ -15,7 +15,7 @@ if ($token === '') {
     $errorMessage = 'User token not received';
 } else {
     require_once 'data/user.php';
-    $user = new User;
+    $user = new User();
     if (!$user->validateAccountActivationToken($token)) {
         $errorMessage = $user->lastErrorMessage;
     }
@@ -36,6 +36,5 @@ include 'views/header.php';
             </section>
         <?php endif; ?>
     </main>
-<?php
-include 'views/footer.php';
-?>
+
+<?php include 'views/footer.php'; ?>

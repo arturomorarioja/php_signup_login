@@ -15,11 +15,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errorMessage = 'Valid email is required';
         } else {           
             require_once 'data/user.php';
-            $user = new User;
+            $user = new User();
             $tokenHash = $user->resetPasswordResetToken($email);
             if ($tokenHash) {
                 require_once 'data/mailer.php';
-                $mailer = new Mailer;
+                $mailer = new Mailer();
                 if ($mailer->sendResetPassword($email, $tokenHash)) {
                     $success = true;
                 } else {
@@ -58,6 +58,5 @@ include 'views/header.php';
             </form>
         <?php endif; ?>
     </main>
-<?php
-include 'views/footer.php';
-?>
+
+<?php include 'views/footer.php'; ?>

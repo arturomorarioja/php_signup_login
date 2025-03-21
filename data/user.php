@@ -10,7 +10,7 @@ class User extends Database
      * @param $name     The username
      * @param $email    The user's email address
      * @param $password The user's password
-     * @return The new user's activation hash, or 0 if there is an error,
+     * @return string The new user's activation hash, or 0 if there is an error,
      *         whose message will be logged into $this->lastErrorMessage
      */
     public function add(string $name, string $email, string $password): string|int
@@ -99,7 +99,7 @@ class User extends Database
      * to reset their password within the next half hour
      * 
      * @param $email The email of the user whose token is reset
-     * @return The hashed token or 0 if there was an error,
+     * @return string The hashed token or 0 if there was an error,
      *         whose message will be logged into $this->lastErrorMessage
      */
     public function resetPasswordResetToken(string $email): string|int
@@ -199,10 +199,10 @@ class User extends Database
      * Validates a password reset token against the database
      * 
      * @param $tokenHash The token to validate
-     * @return The user ID or 0 if the token does not exist, has expired or there is an error,
+     * @return string The user ID or 0 if the token does not exist, has expired or there is an error,
      *         whose message will be logged into $this->lastErrorMessage
      */
-    public function validatePasswordResetToken(string $tokenHash): int 
+    public function validatePasswordsToken(string $tokenHash): int 
     {
         $sql =<<<'SQL'
             SELECT nUserID, dResetTokenExpiresAt
@@ -230,6 +230,60 @@ class User extends Database
             $this->lastErrorMessage = 'Database error: ' . $e->getMessage();
             return 0;
         }
+    }
+
+    /**
+     * It validates user passwords
+     * 
+     * @param $password       The password
+     * @param $repeatPassword The password repeated (both must match)
+     * @return array Error messages
+     */
+    public static function validatePasswords(string $password, string $repeatPassword): array
+    {
+        $errorMessages = [];
+
+        if (strlen($password) < 8) {
+            $errorMessages[] = 'Password must be at least 8 characters';
+        }
+        
+        if (!preg_match('/[a-z]/i', $password)) {
+            $errorMessages[] = 'Password must contain at least one letter';
+        }
+        
+        if (!preg_match('/[0-9]/', $password)) {
+            $errorMessages[] = 'Password must contain at least one number';
+        }
+        
+        if ($password !== $repeatPassword) {
+            $errorMessages[] = 'Passwords must have the same value';
+        }    
+
+        return $errorMessages;
+    }
+
+    /**
+     * It validates user information upon sign up
+     * 
+     * @param $name           Username
+     * @param $email          User email address
+     * @param $password       User password
+     * @param $repeatPassword Repeated user password (both must match)
+     * @return array Error messages
+     */
+    public static function validateInformation(string $name, string $email, string $password, string $repeatPassword): array
+    {
+        $errorMessages = [];
+
+        if (empty($name)) { 
+            $errorMessages[] = 'Name is required'; 
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errorMessages[] = 'Valid email is required';
+        }
+    
+        return array_merge($errorMessages, self::validatePasswords($password, $repeatPassword));
     }
 
     /**
@@ -274,7 +328,7 @@ class User extends Database
      * Generates a hashed token for use when either 
      * activating an account or resetting a password
      * 
-     * @return The hashed token
+     * @return string The hashed token
      */
     private function generateToken(): string
     {

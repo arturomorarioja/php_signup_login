@@ -19,6 +19,5 @@ include 'views/header.php';
             <?php endif; ?>
         </section>
     </main>
-<?php
-include 'views/footer.php';
-?>
+
+<?php include 'views/footer.php'; ?>

@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'
     && $password !== '') {
 
     require_once 'data/user.php';
-    $user = new User;
+    $user = new User();
     $userInfo = $user->validateLogin($email, $password);
 
     if ($userInfo) {
@@ -60,6 +60,5 @@ include 'views/header.php';
             <p><a href="forgot-password.php" title="Forgot password?">Forgot password?</a></p>
         </section>
     </main>
-<?php
-include 'views/footer.php';
-?>    
+
+<?php include 'views/footer.php'; ?>    

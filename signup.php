@@ -19,36 +19,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = trim($_POST['password'] ?? '');
     $repeatPassword = trim($_POST['repeat-password'] ?? '');
 
-    if (empty($name)) { $errorMessages[] = 'Name is required'; }
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $errorMessages[] = 'Valid email is required';
-    }
-    if (strlen($password) < 8) {
-        $errorMessages[] = 'Password must be at least 8 characters';
-    }
+    require_once 'data/user.php';
     
-    if (!preg_match('/[a-z]/i', $password)) {
-        $errorMessages[] = 'Password must contain at least one letter';
-    }
-    
-    if (!preg_match('/[0-9]/', $password)) {
-        $errorMessages[] = 'Password must contain at least one number';
-    }
-    
-    if ($password !== $repeatPassword) {
-        $errorMessages[] = 'Passwords must have the same value';
-    }
+    $errorMessages = User::validateInformation($name, $email, $password, $repeatPassword);
     
     if ($errorMessages === []) {
-        require_once 'data/user.php';
-        $user = new User;
+        $user = new User();
         $accountActivationHash = $user->add($name, $email, $password);
         
         if (!$accountActivationHash) {
             $errorMessages[] = $user->lastErrorMessage;
         } else {
             require_once 'data/mailer.php';
-            $mailer = new Mailer;
+            $mailer = new Mailer();
             if (!$mailer->sendAccountActivation($email, $accountActivationHash)) {
                 $errorMessages[] = $mailer->lastErrorMessage;
             } else {
@@ -100,6 +83,5 @@ include 'views/header.php';
             </form>
         <?php endif; ?>
     </main>
-<?php
-include 'views/footer.php';
-?>
+
+<?php include 'views/footer.php'; ?>

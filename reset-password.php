@@ -23,8 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $showForm = false;  
     } else {
         require_once 'data/user.php';
-        $user = new User;
-        if (!$user->validatePasswordResetToken($token)) {
+        $user = new User();
+        if (!$user->validatePasswordsToken($token)) {
             $errorMessages[] = $user->lastErrorMessage;
             // If the token is incorrect, the form should not even be shown.
             // It could be a security attack.
@@ -40,27 +40,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     // it is validated again, as a malicious user could tamper with 
     // the hidden input in the form
     require_once 'data/user.php';
-    $user = new User;
-    $userID = $user->validatePasswordResetToken($token);
+    $user = new User();
+    $userID = $user->validatePasswordsToken($token);
     if (!$userID) { $errorMessages[] = $user->lastErrorMessage; }
-    
-    $newPassword = trim($_POST['new-password'] ?? '');
-    if (strlen($newPassword) < 8) {
-        $errorMessages[] = 'Password must be at least 8 characters';
-    }
-    
-    if (!preg_match('/[a-z]/i', $newPassword)) {
-        $errorMessages[] = 'Password must contain at least one letter';
-    }
-    
-    if (!preg_match('/[0-9]/', $newPassword)) {
-        $errorMessages[] = 'Password must contain at least one number';
-    }
-    
-    $repeatNewPassword = trim($_POST['repeat-new-password'] ?? '');
-    if ($newPassword !== $repeatNewPassword) {
-        $errorMessages[] = 'Passwords must have the same value';
-    }
+
+    $newPassword = $_POST['new-password'];
+    $errorMessages = array_merge(
+        $errorMessages, 
+        User::validatePasswords($newPassword, $_POST['repeat-new-password'])
+    );
     
     if ($errorMessages === []) {
         if ($user->resetPassword($userID, $newPassword)) {
@@ -107,6 +95,5 @@ include 'views/header.php';
             <?php endif; ?>
         <?php endif; ?>
     </main>
-<?php
-include 'views/footer.php';
-?>
+
+<?php include 'views/footer.php'; ?>
